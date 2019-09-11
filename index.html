@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <title>Расстановка русских переносов</title>
+  <style type="text/css">
+    .jumbotron {
+      padding: 2rem 1rem;
+      margin-bottom: 0;
+      background-color: #fff;
+    }
+
+    label {
+      margin-bottom: 0;
+    }
+
+    .label--padding {
+      padding: .28rem 0 .32rem;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <section class="jumbotron text-center">
+      <div class="container">
+        <h2 class="text-center">Расстановка русских HTML-переносов</h2>
+      </div>
+    </section>
+    <section>
+      <div class="container">
+        <form>
+          <div class="form-row">
+            <div class="col-md">
+              <div class="form-group">
+                <label for="source" class="label--padding">Исходный текст:</label>
+                <textarea class="form-control" id="source" rows="15" oninput="textareaOnChange('')"></textarea>
+              </div>
+            </div>
+            <div class="col-md">
+              <div class="form-group">
+                <div class="d-flex flex-row justify-content-between align-items-center mb-1">
+                  <label for="result">Результат:</label>
+                  <button type="button" id="copybutton" class="btn btn-outline-secondary btn-sm" disabled
+                    onclick="copyToClipboard()">Скопировать
+                    текст в буфер</button>
+                </div>
+                <textarea class="form-control" id="result" rows="15" readonly></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <button type="button" id="hyphbutton" class="btn btn-outline-success btn-sm btn-block" disabled
+                onclick="Hyphenation()">Расставить
+                переносы</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+<script>
+  document.addEventListener("DOMContentLoaded", ready);
+
+  function ready() {
+    document.querySelector('#source').value = '';
+    document.querySelector('#result').value = '';
+  }
+
+  function Hyphenate(text) {
+    let RusA = "[абвгдеёжзийклмнопрстуфхцчшщъыьэюя]";
+    let RusV = "[аеёиоуыэюя]";
+    let RusN = "[бвгджзклмнпрстфхцчшщ]";
+    let RusX = "[йъь]";
+    let Hyphen = "&shy;"; //&shy;
+
+    let re1 = new RegExp("(" + RusX + ")(" + RusA + RusA + ")", "ig");
+    let re2 = new RegExp("(" + RusV + ")(" + RusV + RusA + ")", "ig");
+    let re3 = new RegExp("(" + RusV + RusN + ")(" + RusN + RusV + ")", "ig");
+    let re4 = new RegExp("(" + RusN + RusV + ")(" + RusN + RusV + ")", "ig");
+    let re5 = new RegExp(
+      "(" + RusV + RusN + ")(" + RusN + RusN + RusV + ")",
+      "ig"
+    );
+    let re6 = new RegExp(
+      "(" + RusV + RusN + RusN + ")(" + RusN + RusN + RusV + ")",
+      "ig"
+    );
+
+    text = text.replace(re1, "$1" + Hyphen + "$2");
+    text = text.replace(re2, "$1" + Hyphen + "$2");
+    text = text.replace(re3, "$1" + Hyphen + "$2");
+    text = text.replace(re4, "$1" + Hyphen + "$2");
+    text = text.replace(re5, "$1" + Hyphen + "$2");
+    text = text.replace(re6, "$1" + Hyphen + "$2");
+    return text;
+  }
+
+  function Hyphenation() {
+    let sourceText = document.querySelector('#source').value;
+    document.querySelector('#result').value = Hyphenate(sourceText);
+    document.querySelector('#copybutton').removeAttribute('disabled');
+  }
+
+  function copyToClipboard() {
+    let result = document.querySelector('#result');
+    result.focus();
+    result.select();
+    try {
+      let successful = document.execCommand('copy');
+      let msg = successful ? 'successful' : 'unsuccessful';
+      console.log('Copying text command was ' + msg);
+    } catch (err) {
+      console.log('Oops, unable to copy');
+    }
+  }
+
+  function textareaOnChange() {
+    document.querySelector('#result').value = '';
+    document.querySelector('#copybutton').setAttribute('disabled', true);
+    let btn = document.querySelector('#hyphbutton');
+    let sourceText = document.querySelector('#source').value;
+    if (sourceText == '') { btn.setAttribute('disabled', true) } else { btn.removeAttribute('disabled') }
+  }
+
+</script>
+
+</html>
